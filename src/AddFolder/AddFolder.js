@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import NotefulForm from "../NotefulForm/NotefulForm";
 import ApiContext from "../ApiContext";
+import PropTypes from "prop-types";
 import config from "../config";
+import ErrorBoundary from "../ErrorBoundary";
 import "./AddFolder.css";
 
 export default class AddFolder extends Component {
@@ -10,6 +12,17 @@ export default class AddFolder extends Component {
       push: () => {}
     }
   };
+  state = {
+    isButtonDisabled: true
+  };
+
+  onInputChange = e => {
+    const hasText = e.target.value.trim().length > 0;
+    this.setState({
+      isButtonDisabled: !hasText
+    });
+  };
+
   static contextType = ApiContext;
 
   handleSubmit = e => {
@@ -31,26 +44,36 @@ export default class AddFolder extends Component {
       .then(folder => {
         this.context.addFolder(folder);
         this.props.history.push(`/folder/${folder.id}`);
-      })
-      .catch(error => {
-        console.error({ error });
       });
   };
 
   render() {
     return (
-      <section className="AddFolder">
-        <h2>Create a folder</h2>
-        <NotefulForm onSubmit={this.handleSubmit}>
-          <div className="field">
-            <label htmlFor="folder-name-input">Name</label>
-            <input type="text" id="folder-name-input" name="folder-name" />
-          </div>
-          <div className="buttons">
-            <button type="submit">Add folder</button>
-          </div>
-        </NotefulForm>
-      </section>
+      <ErrorBoundary>
+        <section className="AddFolder">
+          <h2>Create a folder</h2>
+          <NotefulForm onSubmit={this.handleSubmit}>
+            <div className="field">
+              <label htmlFor="folder-name-input">Name</label>
+              <input
+                type="text"
+                id="folder-name-input"
+                name="folder-name"
+                onChange={this.onInputChange}
+              />
+            </div>
+            <div className="buttons">
+              <button type="submit" disabled={this.state.isButtonDisabled}>
+                Add folder
+              </button>
+            </div>
+          </NotefulForm>
+        </section>
+      </ErrorBoundary>
     );
   }
 }
+
+AddFolder.propTypes = {
+  history: PropTypes.object
+};
